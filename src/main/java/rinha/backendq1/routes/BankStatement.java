@@ -14,7 +14,7 @@ public class BankStatement {
     private CostumersRepo costumersRepo;
 
     @GetMapping("/clientes/{id}/extrato")
-    public ResponseEntity bankStatement(@PathVariable Long id) {
+    public ResponseEntity<Object> bankStatement(@PathVariable Long id) {
         if (id > 5 || id < 1) {
             return ResponseEntity.unprocessableEntity().build();
         }

@@ -7,8 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -21,11 +19,6 @@ public class Transaction {
 
     @Column(name = "cliente_id")
     private Integer costumers_id;
-
-    // @OneToOne
-    // @JoinColumn(name = "id", referencedColumnName = "cliente_id", nullable =
-    // false)
-    // private Costumers costumers;
 
     @Column(name = "valor")
     private Integer value;
