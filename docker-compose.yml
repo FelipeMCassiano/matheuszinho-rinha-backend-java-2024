@@ -1,0 +1,24 @@
+version: "3.5"
+services:
+   db:
+    image: postgres:latest
+    hostname: db
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      POSTGRES_DB: rinha
+      POSTGRES_USER: rinha
+      POSTGRES_PASSWORD: rinha
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/postgresql.conf:/docker-entrypoint-initdb.d/postgresql.conf
+    command: postgres -c config_file=/docker-entrypoint-initdb.d/postgresql.conf 
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: "300MB"
+
