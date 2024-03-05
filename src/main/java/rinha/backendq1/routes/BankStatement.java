@@ -1,6 +1,10 @@
 package rinha.backendq1.routes;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -29,9 +33,27 @@ public class BankStatement {
             return ResponseEntity.unprocessableEntity().build();
         }
 
-        System.out.println(transactionRepo.findByClienteidOrderByIdAsc(id));
+        Costumers costumerInfo = costumersRepo.findById(id).orElse(null);
 
-        return ResponseEntity.ok().build();
+        if (costumerInfo == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<Transaction> transactions = transactionRepo.findByClienteidOrderByIdAsc(id);
+
+        JSONObject result = new JSONObject();
+        JSONObject userInfo = new JSONObject();
+
+        List<JSONObject> transactionsObject = transactions.stream().map(x -> x.toJsonObject()).toList();
+
+        userInfo.put("limite", costumerInfo.GetLimit());
+        userInfo.put("data_extrato", LocalDateTime.now().toString());
+        userInfo.put("total", costumerInfo.GetBalance());
+
+        result.put("saldo", userInfo);
+        result.put("ultimas_transacoes", transactionsObject.subList(0, transactionsObject.size() > 10 ? 10:transactionsObject.size()));
+
+        return ResponseEntity.ok(result.toString());
     }
 
     @PostMapping("/clientes/{id}/transacoes")
