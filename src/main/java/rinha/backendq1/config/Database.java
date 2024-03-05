@@ -20,7 +20,7 @@ public class Database {
         DataSourceBuilder datasource = DataSourceBuilder.create();
 
         datasource.driverClassName("org.postgresql.Driver");
-        datasource.url("jdbc:postgresql://localhost:5432/rinha?user=rinha&password=rinha");
+        datasource.url("jdbc:postgresql://db:5432/rinha?user=rinha&password=rinha");
         return datasource.build();
     }
 }
