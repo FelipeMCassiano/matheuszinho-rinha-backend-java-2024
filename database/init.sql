@@ -25,10 +25,5 @@ BEGIN
         ('les cruders', 10000 * 100),
         ('padaria joia de cocaia', 100000 * 100),
         ('kid mais', 5000 * 100);
-
-    INSERT INTO transacoes (valor, tipo, cliente_id, descricao, realizada_em)
-    VALUES 
-        (1,'c', 1, 'blabla', '2024-03-04T20:20:58.135Z');
-    
 END;
 $$;

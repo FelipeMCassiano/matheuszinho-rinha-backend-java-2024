@@ -2,15 +2,11 @@ package rinha.backendq1.models;
 
 import java.util.List;
 
-import org.hibernate.annotations.ManyToAny;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -27,9 +23,12 @@ public class Costumers {
     @Column(name = "saldo")
     private Integer balance;
 
-    @OneToMany(targetEntity = Transaction.class)
-    @JoinColumn(name = "cliente_id")
+    @OneToMany(mappedBy = "costumers_id", orphanRemoval = true)
     private List<Transaction> transactions;
+
+    public void AddTransaction(Transaction transaction) {
+        transactions.add(transaction);
+    }
 
     public Integer GetId() {
         return id;
