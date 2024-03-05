@@ -2,6 +2,8 @@ package rinha.backendq1.models;
 
 import java.time.LocalDateTime;
 
+import org.json.JSONObject;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -64,5 +66,16 @@ public class Transaction {
 
     public void SetClientId(Long val) {
         clienteid = val;
+    }
+
+    public JSONObject toJsonObject() {
+        JSONObject result = new JSONObject();
+
+        result.put("valor", value);
+        result.put("realizada_em", created_at);
+        result.put("descricao", description);
+        result.put("tipo", kind);
+
+        return result;
     }
 }
