@@ -1,6 +1,5 @@
 package rinha.backendq1.models;
 
-import java.lang.reflect.Constructor;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -17,8 +16,8 @@ public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    @Column(name = "cliente_id")
-    private Long costumers_id;
+    @Column(name = "clienteid")
+    private Long clienteid;
 
     @Column(name = "valor")
     private Integer value;
@@ -64,6 +63,6 @@ public class Transaction {
     }
 
     public void SetClientId(Long val) {
-        costumers_id = val;
+        clienteid = val;
     }
 }

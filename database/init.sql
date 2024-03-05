@@ -7,13 +7,13 @@ CREATE TABLE clientes (
 
 CREATE TABLE transacoes (
     id SERIAL PRIMARY KEY,
-    cliente_id INTEGER NOT NULL,
+    ClienteId INTEGER NOT NULL,
     valor INTEGER NOT NULL,
     tipo VARCHAR(1) NOT NULL,
     descricao VARCHAR(10) NOT NULL,
     realizada_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_clientes_transacoes_id
-        FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+        FOREIGN KEY (ClienteId) REFERENCES clientes(id)
 );
 
 DO $$

@@ -29,7 +29,8 @@ public class BankStatement {
             return ResponseEntity.unprocessableEntity().build();
         }
 
-        System.out.println(costumersRepo.findById(id).get().GetTransactions().size());
+        System.out.println(transactionRepo.findByClienteidOrderByIdAsc(id));
+
         return ResponseEntity.ok().build();
     }
 
