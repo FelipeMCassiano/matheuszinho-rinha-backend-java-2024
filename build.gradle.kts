@@ -19,6 +19,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.json:json:20231013")
+    implementation("javax.persistence:javax.persistence-api:2.2")
 	runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

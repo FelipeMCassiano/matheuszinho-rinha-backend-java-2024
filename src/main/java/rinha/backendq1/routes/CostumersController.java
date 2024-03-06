@@ -1,10 +1,5 @@
 package rinha.backendq1.routes;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -13,14 +8,30 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import rinha.backendq1.models.Costumers;
 import rinha.backendq1.models.Transaction;
 import rinha.backendq1.models.TransactionRequest;
 import rinha.backendq1.repository.CostumersRepo;
 import rinha.backendq1.repository.TransactionRepo;
+import jakarta.persistence.EntityTransaction;
+
+import org.json.JSONObject;
 
 @Controller
-public class BankStatement {
+
+public class CostumersController {
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Autowired
     private CostumersRepo costumersRepo;
 
@@ -39,7 +50,7 @@ public class BankStatement {
             return ResponseEntity.notFound().build();
         }
 
-        List<Transaction> transactions = transactionRepo.findByClienteidOrderByIdAsc(id);
+        List<Transaction> transactions = transactionRepo.findFirst10ByClienteidOrderByIdDesc(id);
 
         JSONObject result = new JSONObject();
         JSONObject userInfo = new JSONObject();
@@ -51,15 +62,18 @@ public class BankStatement {
         userInfo.put("total", costumerInfo.GetBalance());
 
         result.put("saldo", userInfo);
-        result.put("ultimas_transacoes", transactionsObject.subList(0, transactionsObject.size() > 10 ? 10:transactionsObject.size()));
+        result.put("ultimas_transacoes",
+                transactionsObject.subList(0, transactionsObject.size() > 10 ? 10 : transactionsObject.size()));
 
         return ResponseEntity.ok(result.toString());
     }
 
     @PostMapping("/clientes/{id}/transacoes")
     public ResponseEntity<Object> createTransaction(@PathVariable Long id, @RequestBody TransactionRequest request) {
-        if (id > 5 || id < 1) {
 
+        EntityTransaction entityTransction = entityManager.getTransaction();
+
+        if (id > 5 || id < 1) {
             System.out.println("pass id");
             return ResponseEntity.unprocessableEntity().build();
         }
@@ -84,11 +98,14 @@ public class BankStatement {
             System.out.println("pass description too big");
             return ResponseEntity.unprocessableEntity().build();
         }
-        Optional<Costumers> costumerR = costumersRepo.findById(id);
-        if (!costumerR.isPresent()) {
+        Query nativeQuery = entityManager.createNativeQuery("SELECT * FROM clientes WHERE id = :userId FOR UPDATE",
+                Costumers.class);
+        nativeQuery.setParameter("userId", id);
+
+        Costumers costumer = (Costumers) nativeQuery.getSingleResult();
+        if (costumer == null) {
             return ResponseEntity.notFound().build();
         }
-        Costumers costumer = costumerR.get();
         Integer limit = costumer.GetLimit();
         Integer balance = costumer.GetBalance();
 
@@ -123,6 +140,8 @@ public class BankStatement {
         transactionRepo.save(newTransaction);
 
         costumersRepo.save(costumer);
+
+        entityTransction.commit();
 
         String jsonString = "{"
                 + "\"limite\": " + limit + ","
