@@ -18,10 +18,13 @@ import java.util.List;
 
 import rinha.backendq1.models.Costumers;
 import rinha.backendq1.models.Transaction;
+import rinha.backendq1.models.TransactionResponse;
 import rinha.backendq1.models.TransactionRequest;
 import rinha.backendq1.repository.CostumersRepo;
 import rinha.backendq1.repository.TransactionRepo;
+import rinha.backendq1.service.RinhaService;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
 
 import org.json.JSONObject;
@@ -37,21 +40,24 @@ public class CostumersController {
     private CostumersRepo costumersRepo;
 
     @Autowired
+    private RinhaService rinhaService;
+
+    @Autowired
     private TransactionRepo transactionRepo;
 
     @GetMapping("/clientes/{id}/extrato")
     public ResponseEntity<Object> bankStatement(@PathVariable Long id) {
         if (id > 5 || id < 1) {
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.notFound().build();
         }
 
-        Costumers costumerInfo = costumersRepo.findById(id).orElse(null);
+        Costumers costumerInfo = rinhaService.GetClienteByid(id).orElse(null);
 
         if (costumerInfo == null) {
             return ResponseEntity.notFound().build();
         }
 
-        List<Transaction> transactions = transactionRepo.findFirst10ByClienteidOrderByIdDesc(id);
+        List<Transaction> transactions = rinhaService.GetLastTransactions(id);
 
         JSONObject result = new JSONObject();
         JSONObject userInfo = new JSONObject();
@@ -75,7 +81,7 @@ public class CostumersController {
 
         if (id > 5 || id < 1) {
             System.out.println("pass id");
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.notFound().build();
         }
         if (request.descricao() == null || request.descricao().isEmpty()) {
             System.out.println("pass desc");
@@ -99,11 +105,16 @@ public class CostumersController {
             return ResponseEntity.unprocessableEntity().build();
         }
 
-        Query nativeQuery = entityManager.createNativeQuery("SELECT * FROM clientes WHERE id = :userId FOR UPDATE",
-                Costumers.class);
-        nativeQuery.setParameter("userId", id);
+        // Query nativeQuery = entityManager
+        // .createQuery("SELECT limite, saldo FROM clientes WHERE id = :userId",
+        // Costumers.class)
+        // .setLockMode(LockModeType.PESSIMISTIC_WRITE).setParameter("userId", id);
 
-        Costumers costumer = (Costumers) nativeQuery.getSingleResult();
+        // nativeQuery.setParameter("userId", id);
+
+        // Costumers costumer = (Costumers) nativeQuery.getSingleResult();
+        //
+        Costumers costumer = rinhaService.findById(id).orElse(null);
         if (costumer == null) {
             return ResponseEntity.notFound().build();
         }
@@ -139,8 +150,7 @@ public class CostumersController {
         costumer.Setbalance(newbalance);
 
         transactionRepo.save(newTransaction);
-
-        costumersRepo.save(costumer);
+        rinhaService.CreateTransaction(newTransaction, costumer);
 
         JSONObject result = new JSONObject();
 
