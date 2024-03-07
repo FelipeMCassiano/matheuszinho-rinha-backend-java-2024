@@ -6,7 +6,7 @@ services:
     networks:
       - default
     environment:
-      - DATABASE_URL=postgres://rinha:rinha@db:5432/rinha?sslmode=disable
+      - DATABASE_URL=jdbc:postgresql://db:5432/rinha?user=rinha&password=rinha
     depends_on:
       - db
     deploy:

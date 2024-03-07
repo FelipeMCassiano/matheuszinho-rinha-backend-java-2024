@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Query;
+import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import rinha.backendq1.models.Costumers;
 import rinha.backendq1.models.Transaction;
@@ -22,6 +22,7 @@ import rinha.backendq1.models.TransactionRequest;
 import rinha.backendq1.repository.CostumersRepo;
 import rinha.backendq1.repository.TransactionRepo;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.PersistenceContext;
 
 import org.json.JSONObject;
 
@@ -69,20 +70,19 @@ public class CostumersController {
     }
 
     @PostMapping("/clientes/{id}/transacoes")
+    @Transactional
     public ResponseEntity<Object> createTransaction(@PathVariable Long id, @RequestBody TransactionRequest request) {
-
-        EntityTransaction entityTransction = entityManager.getTransaction();
 
         if (id > 5 || id < 1) {
             System.out.println("pass id");
             return ResponseEntity.unprocessableEntity().build();
         }
-        if (request.descricao().isEmpty()) {
+        if (request.descricao() == null || request.descricao().isEmpty()) {
             System.out.println("pass desc");
             return ResponseEntity.unprocessableEntity().build();
         }
 
-        if (request.tipo().isEmpty()) {
+        if (request.tipo() == null || request.tipo().isEmpty()) {
 
             System.out.println("pass empty typ");
             return ResponseEntity.unprocessableEntity().build();
@@ -98,6 +98,7 @@ public class CostumersController {
             System.out.println("pass description too big");
             return ResponseEntity.unprocessableEntity().build();
         }
+
         Query nativeQuery = entityManager.createNativeQuery("SELECT * FROM clientes WHERE id = :userId FOR UPDATE",
                 Costumers.class);
         nativeQuery.setParameter("userId", id);
@@ -141,14 +142,12 @@ public class CostumersController {
 
         costumersRepo.save(costumer);
 
-        entityTransction.commit();
+        JSONObject result = new JSONObject();
 
-        String jsonString = "{"
-                + "\"limite\": " + limit + ","
-                + "\"saldo\": " + balance
-                + "}";
+        result.put("limite", limit);
+        result.put("saldo", balance);
 
-        return ResponseEntity.ok(jsonString);
+        return ResponseEntity.ok(result.toString());
 
     }
 
