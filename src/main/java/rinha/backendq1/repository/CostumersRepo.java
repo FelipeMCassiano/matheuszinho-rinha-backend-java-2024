@@ -11,7 +11,6 @@ import rinha.backendq1.models.Costumers;
 
 @Repository
 public interface CostumersRepo extends JpaRepository<Costumers, Long> {
-
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Costumers> findClienteById(Long id);
 }

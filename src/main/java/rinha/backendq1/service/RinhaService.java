@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import rinha.backendq1.models.Transaction;
-
+import rinha.backendq1.models.TransactionRequest;
 import jakarta.transaction.Transactional;
 import rinha.backendq1.models.Costumers;
 import rinha.backendq1.repository.CostumersRepo;
@@ -38,8 +38,18 @@ public class RinhaService {
     }
 
     @Transactional
-    public void CreateTransaction(Transaction transaction, Costumers costumer) {
-        transactionRepo.save(transaction);
+    public void CreateTransaction(TransactionRequest request, Costumers costumer, Long id, Integer newbalance) {
+        Transaction newTransaction = new Transaction();
+
+        newTransaction.SetKind(request.tipo());
+        newTransaction.SetValue(request.valor());
+        newTransaction.SetDescription(request.descricao());
+        newTransaction.SetClientId(id);
+
+        costumer.Setbalance(newbalance);
+        costumer.AddTransaction(newTransaction);
+
+        transactionRepo.save(newTransaction);
         costumersRepo.save(costumer);
     }
 
