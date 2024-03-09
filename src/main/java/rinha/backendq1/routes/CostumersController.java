@@ -9,40 +9,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Query;
-import jakarta.transaction.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import rinha.backendq1.models.Costumers;
-import rinha.backendq1.models.Transaction;
+import rinha.backendq1.models.BankStatement;
 import rinha.backendq1.models.TransactionRequest;
-import rinha.backendq1.repository.CostumersRepo;
-import rinha.backendq1.repository.TransactionRepo;
+import rinha.backendq1.models.TransactionResponse;
 import rinha.backendq1.service.RinhaService;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
 
-import org.json.JSONObject;
-
 @Controller
-
 public class CostumersController {
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Autowired
-    private CostumersRepo costumersRepo;
-
-    @Autowired
     private RinhaService rinhaService;
-
-    @Autowired
-    private TransactionRepo transactionRepo;
 
     @GetMapping("/clientes/{id}/extrato")
     public ResponseEntity<Object> bankStatement(@PathVariable Long id) {
@@ -50,27 +31,14 @@ public class CostumersController {
             return ResponseEntity.notFound().build();
         }
 
-        Costumers costumerInfo = rinhaService.findById(id).orElse(null);
+        BankStatement bStatement = rinhaService.GetBankStatement(id);
 
-        if (costumerInfo == null) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(bStatement);
+    }
 
-        List<Transaction> transactions = rinhaService.GetLastTransactions(id);
-
-        JSONObject result = new JSONObject();
-        JSONObject userInfo = new JSONObject();
-
-        List<JSONObject> transactionsObject = transactions.stream().map(x -> x.toJsonObject()).toList();
-
-        userInfo.put("limite", costumerInfo.GetLimit());
-        userInfo.put("data_extrato", LocalDateTime.now().toString());
-        userInfo.put("total", costumerInfo.GetBalance());
-
-        result.put("saldo", userInfo);
-        result.put("ultimas_transacoes", transactionsObject);
-
-        return ResponseEntity.ok(result.toString());
+    public boolean isDoubleInt(double d) {
+        double TOLERANCE = 1E-5;
+        return Math.abs(Math.floor(d) - d) < TOLERANCE;
     }
 
     @PostMapping("/clientes/{id}/transacoes")
@@ -93,43 +61,18 @@ public class CostumersController {
             return ResponseEntity.unprocessableEntity().build();
         }
 
+        if (!isDoubleInt(request.valor())) {
+
+            return ResponseEntity.unprocessableEntity().build();
+        }
+
         if (request.descricao().length() > 10) {
             return ResponseEntity.unprocessableEntity().build();
         }
-        Costumers costumer = rinhaService.findById(id).orElse(null);
-        if (costumer == null) {
-            return ResponseEntity.notFound().build();
-        }
-        Integer limit = costumer.GetLimit();
-        Integer balance = costumer.GetBalance();
 
-        Integer newbalance = 0;
+        TransactionResponse trasanctionResponse = rinhaService.CreateTransaction(request, id);
 
-        switch (request.tipo()) {
-            case "c":
-                newbalance = balance + request.valor();
-                break;
-            case "d":
-                newbalance = balance - request.valor();
-                break;
-            default:
-                return ResponseEntity.unprocessableEntity().build();
-        }
-
-        if ((newbalance + limit) < 0) {
-            return ResponseEntity.unprocessableEntity().build();
-        }
-
-        costumer.Setbalance(newbalance);
-
-        rinhaService.CreateTransaction(request, costumer, id, newbalance);
-
-        JSONObject result = new JSONObject();
-
-        result.put("limite", limit);
-        result.put("saldo", newbalance);
-
-        return ResponseEntity.ok(result.toString());
+        return ResponseEntity.ok(trasanctionResponse);
 
     }
 
