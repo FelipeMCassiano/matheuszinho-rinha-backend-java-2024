@@ -1,8 +1,7 @@
-FROM eclipse-temurin:17-jdk-alpine
+FROM gradle:jdk17-jammy AS build
 
-VOLUME /tmp
-ARG JAR_FILE=build/libs/*.jar
+COPY . .
 
-COPY ${JAR_FILE} app.jar
+RUN gradle build --no-daemon
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "build/libs/backend-q1-0.0.1-SNAPSHOT.jar"]

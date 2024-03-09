@@ -1,7 +1,7 @@
 version: "3.5"
 services:
   api01: &api
-    build: .
+    image: felipecassiano/matheuszinho-rinha:latest
     hostname: api01
     networks:
       - default
